@@ -1,0 +1,23 @@
+{
+  "name": "comprobantes",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/main.ts",
+    "start": "tsx src/main.ts",
+    "test": "tsx --test test/dominio.test.ts test/http.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "awilix": "^12.0.5",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
