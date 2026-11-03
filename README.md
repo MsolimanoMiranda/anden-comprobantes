@@ -1,22 +1,50 @@
 # Comprobantes
 
-Facturas y notas de crédito con Express, inyección de dependencias (Awilix) y arquitectura hexagonal. El IGV es 18% y el RUC valida el dígito de SUNAT. Los montos están en céntimos.
+La emisión de una factura y de su nota de crédito. El IGV es 18 %, el RUC lleva el dígito de SUNAT y la nota no puede anular más de lo vendido.
 
-## Capas
+## Concepto
 
-- `domain` — totales, documento del receptor, tope de la nota de crédito.
-- `application` — emitir comprobante y emitir nota.
-- `ports` — repositorio.
-- `adapters` — SQLite de Node (`node:sqlite`) y Express.
-- `composition.ts` — contenedor de Awilix, el único lugar que une las capas.
+Los montos viven en céntimos. El dominio calcula el total y valida el RUC. La nota de crédito resta, y se detiene si pasa el total del comprobante. Express no instancia el dominio a mano: Awilix, en `composition.ts`, es el único lugar que une repositorio y casos de uso.
+
+## Stack
+
+| Pieza | Para qué |
+| --- | --- |
+| Node.js | Runtime y `node:sqlite`. |
+| Express | HTTP en el puerto `3044`. |
+| Awilix | Inyección de dependencias, modo proxy. |
+| Arquitectura hexagonal | El repositorio es un puerto. SQLite y Express son adaptadores. |
+| Clean Architecture | Totales, RUC y el tope de la nota viven en el dominio. |
+| TypeScript | Fuentes y `tsc`. |
+| node:test | `tsx --test` cubre dominio y HTTP. |
+
+## Flujo
+
+```mermaid
+flowchart TD
+  http[Express]
+  awilix[Contenedor Awilix]
+  emitir[Emitir comprobante]
+  igv[IGV 18 por ciento]
+  ruc{RUC con dígito válido}
+  nota[Nota de crédito]
+  tope{La nota pasa el total}
+  rechazo[Rechazo]
+  sqlite[node:sqlite]
+  http --> awilix --> emitir --> ruc
+  ruc -->|no| rechazo
+  ruc -->|sí| igv --> sqlite
+  awilix --> nota --> tope
+  tope -->|sí| rechazo
+  tope -->|no| sqlite
+```
 
 ## Correr
 
+Desde esta carpeta:
+
 ```bash
-cd projects/express-comprobantes
-npm install
+npm ci
 npm test
 npm run dev
 ```
-
-Escucha en el puerto `3044`.
